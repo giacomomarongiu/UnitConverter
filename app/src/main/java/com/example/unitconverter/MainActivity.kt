@@ -1,6 +1,5 @@
 package com.example.unitconverter
 
-import android.graphics.drawable.Icon
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -24,12 +23,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.unitconverter.ui.theme.UnitConverterTheme
@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             UnitConverterTheme {
-                // A surface container using the 'background' color from the theme
+                //Applico uno stile semplice
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -54,20 +54,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun UnitConverter() {
+    //Inizializzo varie variabili con remember per "conservare" alcuni valori
     var inputValue by remember { mutableStateOf(value = "") }
     var outputValue by remember { mutableStateOf(value = "") }
-    var inputUnit by remember { mutableStateOf(value = "Meters") }
-    var outputUnit by remember { mutableStateOf(value = "Meters") }
+    var inputUnit by remember { mutableStateOf(value = "Select") }
+    var outputUnit by remember { mutableStateOf(value = "Select") }
     var iExpanded by remember { mutableStateOf(value = false) }
     var oExpanded by remember { mutableStateOf(value = false) }
     var conversionFactor = remember { mutableStateOf(value = 1.00) }
     var oConversionFactor = remember { mutableStateOf(value = 1.00) }
 
-
+    // Funzione di conversione
     fun convertUnits() {
         val inputValueDouble = inputValue.toDoubleOrNull() ?: 0.0
-        var result =
-            (inputValueDouble * conversionFactor.value * 100.0 / oConversionFactor.value).roundToInt() / 100
+        val result = (inputValueDouble * conversionFactor.value / oConversionFactor.value).roundToInt() / 100.0
         outputValue = result.toString()
     }
 
@@ -75,27 +75,35 @@ fun UnitConverter() {
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
-
     ) {
-
-        //Qui è dove l'interfaccia utente impilerà  le cose da stampare
-        Text(text = "Unit Converter")
+        // Aggiungo un po' di stile
+        Text(
+            text = "Unit Converter",
+            style = MaterialTheme.typography.headlineLarge.copy(
+                color = MaterialTheme.colorScheme.primary,
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Bold
+            )
+        )
         Spacer(modifier = Modifier.height(16.dp))
-        OutlinedTextField(value = inputValue, onValueChange = { //Cosa cambia
-            inputValue = it
-            convertUnits()
-        },
-            label = { Text("Enter Value") })
+
+        // Campo di input
+        OutlinedTextField(
+            value = inputValue,
+            onValueChange = {
+                inputValue = it
+                convertUnits()
+            },
+            label = { Text("Enter Value") }
+        )
         Spacer(modifier = Modifier.height(16.dp))
 
         Row {
-            // val context= LocalContext.current
-            //Qui è dove l'interfaccia utente metterà i prossimità l'uno dell'altro le cose da stampare
-
+            // Menu a discesa per l'unità di input
             Box {
                 Button(onClick = { iExpanded = true }) {
-                    Text(text = "$inputUnit")
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(text = inputUnit)
+                    Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         Icons.Default.ArrowDropDown,
                         contentDescription = "Arrow Down"
@@ -117,7 +125,6 @@ fun UnitConverter() {
                             inputUnit = "Meters"
                             conversionFactor.value = 1.0
                             convertUnits()
-
                         })
                     DropdownMenuItem(
                         text = { Text("Feet") },
@@ -126,7 +133,6 @@ fun UnitConverter() {
                             inputUnit = "Feet"
                             conversionFactor.value = 0.3048
                             convertUnits()
-
                         })
                     DropdownMenuItem(
                         text = { Text("Millimeters") },
@@ -135,14 +141,23 @@ fun UnitConverter() {
                             inputUnit = "Millimeters"
                             conversionFactor.value = 0.001
                             convertUnits()
-
+                        })
+                    DropdownMenuItem(
+                        text = { Text("Inches") },
+                        onClick = {
+                            iExpanded = false
+                            inputUnit = "Inches"
+                            conversionFactor.value = 0.0254
+                            convertUnits()
                         })
                 }
             }
             Spacer(modifier = Modifier.width(16.dp))
+            // Menu a discesa per l'unità di output
             Box {
                 Button(onClick = { oExpanded = true }) {
-                    Text(text = "$outputUnit")
+                    Text(text = outputUnit)
+                    Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         Icons.Default.ArrowDropDown,
                         contentDescription = "ArrowDropDown"
@@ -181,15 +196,32 @@ fun UnitConverter() {
                             oConversionFactor.value = 0.001
                             convertUnits()
                         })
+                    DropdownMenuItem(
+                        text = { Text("Inches") },
+                        onClick = {
+                            oExpanded = false
+                            outputUnit = "Inches"
+                            oConversionFactor.value = 0.0254
+                            convertUnits()
+                        })
                 }
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Result $outputValue $outputUnit")
+
+        //Condizione per visualizzare il risultato solo nel momento in cui c'è un confronto
+        if ((outputUnit != "Select") && (inputUnit != "Select")) {
+            Text(
+                text = "Result: $outputValue $outputUnit",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    color = MaterialTheme.colorScheme.secondary,
+                    fontFamily = FontFamily.SansSerif
+                )
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
